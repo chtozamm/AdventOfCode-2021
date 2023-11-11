@@ -1,94 +1,101 @@
-// const input = `0,9 -> 5,9
-// 8,0 -> 0,8
-// 9,4 -> 3,4
-// 2,2 -> 2,1
-// 7,0 -> 7,4
-// 6,4 -> 2,0
-// 0,9 -> 2,9
-// 3,4 -> 1,4
-// 0,0 -> 8,8
-// 5,5 -> 8,2`
-//   .split("\n")
-//   .map((line) => line.replace(" -> ", ",").split(","));
-
 const input = await Deno.readTextFile("./input.txt").then((input) =>
   input.split("\r\n").map((line) => line.replace(" -> ", ",").split(","))
 );
 
-let MIN = Infinity;
-let MAX = -Infinity;
+// Convert string to numbers
+const lines = input.map((line) => line.map((value) => +value));
 
-// Filter only horizontal and vertical lines
-let lines = [];
-for (const line of input) {
-  if (line[0] !== line[2] && line[1] !== line[3]) continue;
-  lines.push(line);
-  // Set extremes for forming a map
-  for (const char of line) {
-    if (+char < MIN) MIN = +char;
-    if (+char > MAX) MAX = +char;
+let MAX_VALUE = -Infinity;
+
+for (const line of lines) {
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] > MAX_VALUE) MAX_VALUE = line[i];
   }
 }
 
-// Convert string to numbers
-lines = lines.map((line) => line.map((value) => +value));
-
-// Define and populate map of overlaps
+// Create a map of overlaps
 const map = [];
 const line = [];
-for (let i = 0; i <= MAX; i++) {
+for (let i = 0; i <= MAX_VALUE; i++) {
   line.push(0);
 }
-for (let i = 0; i <= MAX; i++) {
+for (let i = 0; i <= MAX_VALUE; i++) {
   map.push([...line]);
 }
 
-for (let i = 0; i < lines.length; i++) {
-  let start = null;
-  let lineMin = null;
-  let lineMax = null;
-  let direction: "vertical" | "horizontal" = "horizontal";
+for (let i = 0; i < input.length; i++) {
+  let lineStart = null;
+  let lineEnd = null;
+
+  // Vertical lines
   if (lines[i][0] === lines[i][2]) {
-    direction = "horizontal";
-    start = lines[i][0];
-    if (lines[i][1] >= lines[i][3]) {
-      lineMax = lines[i][1];
-      lineMin = lines[i][3];
-    } else {
-      lineMax = lines[i][3];
-      lineMin = lines[i][1];
-    }
-  } else if (lines[i][1] === lines[i][3]) {
-    direction = "vertical";
-    start = lines[i][1];
-    if (lines[i][0] >= lines[i][2]) {
-      lineMax = lines[i][0];
-      lineMin = lines[i][2];
-    } else {
-      lineMax = lines[i][2];
-      lineMin = lines[i][0];
+    lineStart = Math.min(lines[i][1], lines[i][3]);
+    lineEnd = Math.max(lines[i][1], lines[i][3]);
+
+    for (let j = lineStart; j <= lineEnd; j++) {
+      map[j][lines[i][0]]++;
     }
   }
 
-  // console.log("Direction: " + direction);
-  // console.log("Start: " + start);
-  // console.log("lineMin: " + lineMin);
-  // console.log("lineMax: " + lineMax);
+  // Horizontal lines
+  if (lines[i][1] === lines[i][3]) {
+    lineStart = Math.min(lines[i][0], lines[i][2]);
+    lineEnd = Math.max(lines[i][0], lines[i][2]);
 
-  if (direction === "vertical") {
-    for (let j = lineMin!; j <= lineMax!; j++) {
-      map[start!][j]++;
+    for (let j = lineStart; j <= lineEnd; j++) {
+      map[lines[i][1]][j]++;
     }
-  } else if (direction === "horizontal") {
-    for (let j = lineMin!; j <= lineMax!; j++) {
-      map[j][start!]++;
+  }
+
+  let startX = null;
+  let startY = null;
+  let endX = null;
+  let endY = null;
+
+  // Diagonal lines
+  if (
+    lines[i][0] - lines[i][1] === lines[i][2] - lines[i][3] ||
+    lines[i][0] - lines[i][2] === lines[i][3] - lines[i][1]
+  ) {
+    if (lines[i][1] < lines[i][3]) {
+      startY = lines[i][1];
+      endY = lines[i][3];
+      startX = lines[i][0];
+      endX = lines[i][2];
+      if (startX < endX) {
+        for (let j = startY; j <= endY; j++) {
+          map[j][startX]++;
+          startX++;
+        }
+      } else {
+        for (let j = startY; j <= endY; j++) {
+          map[j][startX]++;
+          startX--;
+        }
+      }
+    } else {
+      startY = lines[i][3];
+      endY = lines[i][1];
+      startX = lines[i][2];
+      endX = lines[i][0];
+      if (startX < endX) {
+        for (let j = startY; j <= endY; j++) {
+          map[j][startX]++;
+          startX++;
+        }
+      } else {
+        for (let j = startY; j <= endY; j++) {
+          map[j][startX]++;
+          startX--;
+        }
+      }
     }
   }
 }
 
 let overlaps = 0;
-for (let i = 0; i <= MAX; i++) {
-  for (let j = 0; j <= MAX; j++) {
+for (let i = 0; i <= MAX_VALUE; i++) {
+  for (let j = 0; j <= MAX_VALUE; j++) {
     if (map[i][j] > 1) overlaps++;
   }
 }
