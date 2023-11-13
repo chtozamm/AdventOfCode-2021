@@ -30,6 +30,7 @@ let nine: string[] = [];
 let zero: string[] = [];
 let total = 0;
 
+// Count overlaps with given segments
 function countOverlaps(value: string[], segments: string[]) {
   let overlaps = 0;
   for (let i = 0; i < segments.length; i++) {
@@ -47,92 +48,66 @@ for (const line of input) {
     if (value.length === 7) eight = value.split("");
   }
 
-  const topleftAndCenterSegments = four.filter(
-    (segment) => !one.includes(segment)
-  );
-  const leftBottomAndBottomSegments = eight.filter(
+  // Find segments from known digits
+  const TOPLEFT_AND_CENTER = four.filter((segment) => !one.includes(segment));
+  const BOTTOMLEFT_AND_BOTTOM = eight.filter(
     (segment) =>
       ![...new Set([...one, ...four, ...seven]).values()].includes(segment)
   );
 
-  // Find 0
+  // Find digits 0, 2, 3, 5, 6, 9
   for (const value of line[0]) {
     const currentValue = value.split("");
-    const overlapsWithSegments = countOverlaps(
+
+    // Find 0
+    const overlapsWithTopLeftAndCenter = countOverlaps(
       currentValue,
-      topleftAndCenterSegments
+      TOPLEFT_AND_CENTER
     );
-    if (currentValue.length === 6 && overlapsWithSegments === 1)
+    if (currentValue.length === 6 && overlapsWithTopLeftAndCenter === 1)
       zero = value.split("");
-  }
-  // Find 2
-  for (const value of line[0]) {
-    const currentValue = value.split("");
-    const overlapsWithSegments1 = countOverlaps(currentValue, one);
-    const overlapsWithSegments2 = countOverlaps(
-      currentValue,
-      topleftAndCenterSegments
-    );
+
+    // Find 2
+    const overlapsWithRightSide = countOverlaps(currentValue, one);
     if (
       currentValue.length === 5 &&
-      overlapsWithSegments1 === 1 &&
-      overlapsWithSegments2 === 1
+      overlapsWithRightSide === 1 &&
+      overlapsWithTopLeftAndCenter === 1
     )
       two = value.split("");
-  }
-  // Find 3
-  for (const value of line[0]) {
-    const currentValue = value.split("");
-    const overlapsWithSegments1 = countOverlaps(
+
+    // Find 3
+    const overlapsWithBottomLeftAndBottom = countOverlaps(
       currentValue,
-      topleftAndCenterSegments
-    );
-    const overlapsWithSegments2 = countOverlaps(
-      currentValue,
-      leftBottomAndBottomSegments
+      BOTTOMLEFT_AND_BOTTOM
     );
     if (
       currentValue.length === 5 &&
-      overlapsWithSegments1 === 1 &&
-      overlapsWithSegments2 === 1
+      overlapsWithTopLeftAndCenter === 1 &&
+      overlapsWithBottomLeftAndBottom === 1
     )
       three = value.split("");
-  }
-  // Find 5
-  for (const value of line[0]) {
-    const currentValue = value.split("");
-    const overlapsWithSegments1 = countOverlaps(currentValue, one);
-    const overlapsWithSegments2 = countOverlaps(
-      currentValue,
-      leftBottomAndBottomSegments
-    );
+
+    // Find 5
     if (
       currentValue.length === 5 &&
-      overlapsWithSegments1 === 1 &&
-      overlapsWithSegments2 === 1
+      overlapsWithRightSide === 1 &&
+      overlapsWithBottomLeftAndBottom === 1
     )
       five = value.split("");
-  }
-  // Find 6
-  for (const value of line[0]) {
-    const currentValue = value.split("");
-    const overlapsWithSegments = countOverlaps(currentValue, one);
-    if (currentValue.length === 6 && overlapsWithSegments === 1)
+
+    // Find 6
+    if (currentValue.length === 6 && overlapsWithRightSide === 1)
       six = value.split("");
-  }
-  // Find 9
-  for (const value of line[0]) {
-    const currentValue = value.split("");
-    const overlapsWithSegments = countOverlaps(
-      currentValue,
-      leftBottomAndBottomSegments
-    );
-    if (currentValue.length === 6 && overlapsWithSegments === 1)
+
+    // Find 9
+    if (currentValue.length === 6 && overlapsWithBottomLeftAndBottom === 1)
       nine = value.split("");
   }
 
   const digits = [zero, one, two, three, four, five, six, seven, eight, nine];
 
+  // Store four digits from input line and add result number to total
   let output = "";
 
   for (const value of line[1]) {
@@ -146,3 +121,4 @@ for (const line of input) {
 }
 
 console.log("Part 2: " + total); // 994266
+// --- End of Part 2 ---
